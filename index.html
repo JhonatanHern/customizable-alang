@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title class="a-lang" a-key="title">
+	</title>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="index.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+	<h1 class="a-lang" a-key="main-title"></h1>
+	<p class="a-lang" a-key="content.introduction"></p>
+	<div>
+		<img src="img/lang_en.jpg" onclick="Alang('en',{success:()=>Allert.message('Switched Language')})">
+		<img src="img/lang_es.jpg" onclick="Alang('es',{success:()=>Allert.message({message:'Lenguaje Cambiado',color:'yellow'})})">
+	</div>
+	<script src="Alang.js"></script>
+	<script src="Allert.js"></script>
+	<script>
+		Alang('es')
+	</script>
+</body>
+</html>

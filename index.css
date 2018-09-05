@@ -1,0 +1,23 @@
+*{
+	box-sizing: border-box;
+}
+body{
+	margin: 0;
+	background-color: #002259;
+	color:white;
+	padding-left: 20%;
+	padding-right: 20%;
+	padding-top: 3em;
+	font-family: 'Century Gothic',sans-serif;
+}
+p{
+	font-size: 1.2em;
+}
+div{
+	display: flex;
+	justify-content: space-around;
+}
+div img{
+	cursor: pointer;
+	height: 3em;
+}

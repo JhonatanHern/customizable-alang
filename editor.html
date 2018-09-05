@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Editor de Texto</title>
+	<style>
+		*{box-sizing: border-box;}
+		body{
+			background-image: url(wallpaper.jpg);
+			background-size: cover;
+			margin: 0;
+			width: 100%;
+			overflow-x: hidden;
+			font-family: sans-serif;
+		}
+		h1{
+			padding: .5EM;
+			margin: 0;
+			background-color: rgba(255,255,255,.6);
+			text-align: center;
+		}
+		h1 select{
+			background-color: white;
+			border: none;
+			padding: .2em;
+			font-size: .7em;
+			min-width: 20%;
+			border-radius: .3em;
+		}
+		@keyframes fancyFadeIn{
+			from{opacity: 0;transform: translateX(50px);}
+			to{opacity: 1;transform: translateX(0px);}
+		}
+		@keyframes fadeIn{
+			from{opacity: 0}
+			to{opacity: 1}
+		}
+		#dashboard{
+			width: 100vw;
+			margin-top: .5em;
+			padding: 2em;
+			position: relative;
+			background-color: rgba(255,255,255,.6);
+			animation-name: fancyFadeIn;
+			animation-duration: .7s;
+			animation-timing-function: ease-in-out;
+		}
+		#dashboard section,#dashboard div{
+			position: relative;
+			width: 100%;
+			padding: .5em;
+			margin-bottom: .5em;
+			border: 2px solid rgba(150,150,200,.5);
+		}
+		#dashboard section{
+			background-color: rgb(150,150,180);
+			padding-left: 1em;
+		}
+		#dashboard div{
+			padding: 1em;
+			border-radius: 1em;
+			background-color: rgb(235,235,235);
+			cursor: pointer;
+			transition-duration: .5s;
+		}
+		#dashboard div:hover{
+			transform: scale(1.02);
+			background-color: white;
+		}
+		#dashboard span{
+			margin-bottom: 1em;
+			font-size: 1.3em;
+		}
+		#dashboard p{
+			margin: 0;
+		}
+		#dashboard div > span{
+			text-decoration: underline;
+		}
+		#modal{
+			background-color: rgba(0,0,0,.6);
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			animation: fadeIn .4s;
+		}
+		#modal section{
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			background-color: rgba(255,255,255,.9);
+			padding: 2em;
+			width: 80%;
+			height: 80%;
+			text-align: center;
+			display: flex;
+			flex-direction: column;
+			overflow-y: auto;
+		}
+		#modal section h2{
+			margin-top: 0;
+			margin-bottom: .7em;
+		}
+		#modal section textarea{
+			width: 100%;
+			resize: none;
+			height: 60%;
+			padding: 1em;
+			font-size: 1.2em;
+			margin-bottom: .5em;
+		}
+		#modal section button{
+			background-color: white;
+			padding: .3em;
+			font-size: 1.4em;
+			border: 1px solid #999;
+			border-radius: .2em;
+			border: none;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+	<h1>
+		Seleccione Lenguaje
+		<br>
+		<select id="languages">
+			<option selected="true" disabled="true">--Seleccione Idioma--</option>
+		</select>
+	</h1>
+	<section id="dashboard" style="display: none">
+	</section>
+	<section id="modal" style="display: none;">
+		<section>
+			<h2 id="edit-title">fsdfsdf</h2>
+			<textarea id="edit-text"></textarea>
+			<button id="edit-save">Guardar</button>
+		</section>
+	</section>
+	<script>
+		const bid = id => document.getElementById(id)
+		fetch('readdir.php')
+			.then(r=>r.json())
+			.then(data=>{
+				data.forEach(lang=>{
+					let option = document.createElement('option')
+					option.value = lang
+					option.innerText = lang.split('.')[0].toUpperCase()
+					languages.appendChild(option)
+				})
+				languages.focus()
+			})
+		const getData = (key,json)=>{
+			if (!key || !json) {
+				return ''
+			}
+			let index = key.indexOf('.')
+			if ( index === -1 ) {
+				return json[key]
+			}else{
+				return getData( key.slice(index + 1) , json[ key.slice( 0 , index ) ] )
+			}
+		}
+		const setData = (key,json,newData)=>{
+			if (!key || !json) {
+				return ''
+			}
+			let index = key.indexOf('.')
+			if ( index === -1 ) {
+				json[key] = newData
+			}else{
+				return setData(
+					key.slice(index + 1) ,
+					json[ key.slice( 0 , index ) ] ,
+					newData
+				)
+			}
+		}
+		document.querySelector('#modal section').addEventListener('click',e=>{
+			e.preventDefault()
+			e.stopPropagation()
+		})
+		modal.addEventListener('click',()=>{
+			modal.style.display = 'none'
+		})
+		function addEventsListeners() {
+			Array.from(dashboard.querySelectorAll('div')).forEach(div=>{
+				div.addEventListener('click',e=>{
+					e.preventDefault()
+					window.currentKey = div.getAttribute('data-key')
+					bid('edit-title').innerText = window.currentKey
+					bid('edit-text').value = getData(window.currentKey,window.AlangData)
+					bid('modal').style.display = 'block'
+				})
+			})
+		}
+		bid('edit-save').addEventListener('click',e=>{
+			setData(window.currentKey,window.AlangData,bid('edit-text').value)
+			dashboard.innerHTML = ''
+			parseJSONAndAddToHTMLNode(window.AlangData,'',dashboard)
+			addEventsListeners()
+			bid('modal').style.display = 'none'
+			let fd = new FormData()
+			fd.append('data',JSON.stringify({
+									lang : window.AlangLang,
+									data : window.AlangData
+								}))
+			fetch('editLang.php',{
+				method : 'POST',
+				credentials : 'include',
+				body : fd
+			})
+		})
+		function parseJSONAndAddToHTMLNode(obj,acum,root) {
+			for(key in obj){
+				if (typeof obj[key] === 'string') {
+					let div = document.createElement('div')
+					let span = document.createElement('span')
+					let p = document.createElement('p')
+					div.setAttribute( 'data-key' , acum ? acum + '.' + key : key )
+					span.innerText = key
+					p.innerText = obj[key]
+					div.appendChild(span)
+					div.appendChild(p)
+					root.appendChild(div)
+				}else{
+					let span = document.createElement('span')
+					span.innerText = key
+					let section = document.createElement('section')
+					section.appendChild(span)
+					parseJSONAndAddToHTMLNode(
+						obj[key],
+						acum ? acum + '.' + key : key,
+						section
+						)
+					root.appendChild(section)
+				}
+			}
+		}
+		languages.addEventListener( 'change' , e => {
+			dashboard.style.display = 'none'
+			fetch('Alang/'+languages.value)
+			.then(r=>r.json())
+			.then(data=>{
+				window.AlangLang = languages.value
+				dashboard.innerHTML = ''
+				window.AlangData = data
+				parseJSONAndAddToHTMLNode(data,'',dashboard)
+				dashboard.style.display = 'block'
+				addEventsListeners()
+			})
+		})
+	</script>
+</body>
+</html>
